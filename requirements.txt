@@ -1,2 +1,3 @@
 chromedriver_autoinstaller
 selenium
+playsound == 1.2.2

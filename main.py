@@ -4,6 +4,7 @@ from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
 from selenium.webdriver.support.ui import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+from playsound import playsound
 import random
 import datetime
 import time
@@ -28,9 +29,11 @@ def click_next_date_page(driver: webdriver.Chrome):
 
 
 def click_date(driver: webdriver.Chrome, date: str):
-    calendar_month = get_element_by_xpath(driver, '//*[@id="content"]/section[2]'
-                                                  '/div[1]/div[1]/div/div/div[2]/div[1]/div[1]/div/strong').text
-    if calendar_month != '2023.06':
+    while True:
+        calendar_month = get_element_by_xpath(driver, '//*[@id="content"]/section[2]'
+                                                      '/div[1]/div[1]/div/div/div[2]/div[1]/div[1]/div/strong').text
+        if calendar_month == '2023.06':
+            break
         click_next_date_page(driver)
     if date == '0610':
         get_element_by_xpath(driver, '//*[@id="content"]/section[2]'
@@ -52,12 +55,17 @@ def click_date(driver: webdriver.Chrome, date: str):
                                      '/div[1]/div[1]/div/div/div[2]/div[2]/div[5]/div[1]').click()
 
 
+def alert_music():
+    while True:
+        playsound('sounds\\alert.wav')
+
+
 def main_logic(driver: webdriver.Chrome, valid_date_list: list[str]):
     seat_data = ''
     for date in valid_date_list:
         click_date(driver, date)
         for i in range(4):
-            log('INFO', f'[{i + 1} / 4] Try to get remaining seats.')
+            log('INFO', f'[{i + 1} / 4] Try to get remaining seats. ({date})')
             get_element_by_xpath(driver, f'//*[@id="content"]/section[2]'
                                          f'/div[1]/div[2]/ul/li[{i + 1}]/button/span').click()  # 10시 00분
             seat_data = get_element_by_xpath(driver, '//*[@id="content"]/section[2]'
@@ -77,6 +85,8 @@ def main_logic(driver: webdriver.Chrome, valid_date_list: list[str]):
     while len(driver.window_handles) == 1:
         time.sleep(0.5)
     driver.switch_to.window(driver.window_handles[1])
+    alert_music()
+    time.sleep(50000)
 
 
 def login_logic(driver: webdriver.Chrome, payco_id: str, payco_pw: str, payco_birth: str):
@@ -102,7 +112,7 @@ def init_variable() -> str and str and list[str] and webdriver.Chrome:
     payco_id = 'kwg0085@naver.com'
     payco_pw = 'dlsvp2tmxm'
     payco_birth = '19980210'
-    valid_date_list = ['0610', '0611', '0617', '0618', '0624', '0625']
+    valid_date_list = ['0610', '0611', '0617', '0618', '0625']
     url = 'https://www.ticketlink.co.kr/product/43514?null'
     driver = webdriver.Chrome(selechecker.driver_check())
     driver.get(url)
@@ -117,7 +127,6 @@ def main():
     valid_date_list, driver = init_variable()
     while True:
         main_logic(driver, valid_date_list)
-    time.sleep(5000)
     driver.close()
     return
 
